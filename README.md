@@ -19,7 +19,7 @@ A secure, headless Node.js and Express REST API built using the Model-View-Contr
 
 *   **Runtime:** Node.js
 *   **Framework:** Express.js
-*   **Database:** MySQL (with transaction support)
+*   **Database:** Maria DB (with transaction support)
 *   **Documentation:** Swagger / OpenAPI 3.0
 *   **Security:** JSON Web Tokens (JWT), Bcrypt, Helmet, Rate Limiting
 
