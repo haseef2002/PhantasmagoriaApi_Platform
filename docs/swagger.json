@@ -1,0 +1,894 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Phantasmagoria API",
+    "description": "API documentation for the Alumni Influencers AR platform. Built to serve data to client-agnostic AR applications while managing a blind bidding influencer marketplace.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter your JWT token here to access authenticated Alumni routes."
+      },
+      "apiKeyAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Enter the Developer API Key to access the AR Client endpoints."
+      }
+    },
+    "schemas": {
+      "BidPayload": {
+        "type": "object",
+        "required": ["bidAmount", "targetDate"],
+        "properties": {
+          "bidAmount": {
+            "type": "number",
+            "format": "float",
+            "description": "The monetary amount of the bid. Must be greater than 0 and higher than the user's previous bid.",
+            "example": 50.50
+          },
+          "targetDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The future date the user is bidding to be Alumni of the Day.",
+            "example": "2026-08-01"
+          }
+        }
+      }
+    }
+  },
+
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "Creates a new user account. Enforces Westminster university email domains and strict password complexity.",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "w1234567@westminster.ac.uk"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "A12345@qwe"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful. Verification email pending.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Registration successful. Please check your email to verify your account."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error (e.g., weak password, invalid domain, missing fields)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Password must be at least 8 characters long and include an uppercase letter, a number, and a special character."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Duplicate Email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "This email is already registered. Please log in or reset your password."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal server error during registration."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/api/auth/verify/{token}": {
+      "get": {
+        "summary": "Verify user email via single-use token",
+        "tags": ["Authentication"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Email verified successfully." },
+          "400": { "description": "Invalid or expired verification token." }
+        }
+      }
+    },
+    
+"/api/auth/login": {
+      "post": {
+        "summary": "Login to receive a JWT session token",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "student@my.westminster.ac.uk" },
+                  "password": { "type": "string", "example": "SecurePass123!" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful. Returns JWT token." },
+          "400": { "description": "Bad Request. Email and password are required." },
+          "401": { "description": "Unauthorized. Invalid credentials." },
+          "403": { "description": "Forbidden. Unverified email address." },
+          "500": { "description": "Internal server error during login." }
+        }
+      }
+    },
+    
+    "/api/auth/forgot-password": {
+      "post": {
+        "summary": "Request a password reset link",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "student@my.westminster.ac.uk" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "If that email is registered, a reset link has been sent." },
+          "500": { "description": "Internal server error." }
+        }
+      }
+    },
+
+    "/api/auth/reset-password/{token}": {
+      "post": {
+        "summary": "Submit a new password using a reset token",
+        "tags": ["Authentication"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newPassword": { "type": "string", "example": "NewSecurePass456!" }
+                }
+              }
+            }
+          }
+        },
+       "responses": {
+          "200": { "description": "Password has been successfully reset." },
+          "400": { "description": "Bad Request. Invalid/expired token or password too short." },
+          "500": { "description": "Internal server error." }
+        }
+      }
+    },
+    "/api/profile/": {
+      "get": {
+        "summary": "Get full alumni profile and associated records",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Returns full profile object including degrees, certifications, etc." },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Profile not found." }
+        }
+      }
+    },
+    "/api/profile/update": {
+      "post": {
+        "summary": "Update core profile information and upload image",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "Jane Doe" },
+                  "biography": { "type": "string", "example": "Software Engineer with 5 years experience." },
+                  "linkedinUrl": { "type": "string", "example": "https://linkedin.com/in/johndoe" },
+                  "profileImage": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Profile updated successfully." }
+        }
+      }
+    },
+    "/api/profile/degrees": {
+      "post": {
+        "summary": "Add an academic degree",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "degreeName": { "type": "string", "example": "BSc Computer Science" },
+                  "universityUrl": { "type": "string", "example": "https://www.westminster.ac.uk" },
+                  "completionDate": { "type": "string", "format": "date", "example": "2026-06-30" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Degree added successfully." } }
+      }
+    },
+    "/api/profile/degrees/{id}": {
+      "put": {
+        "summary": "Update an existing academic degree",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the degree to update",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "degreeName": { "type": "string", "example": "BSc Computer Science (Hons)" },
+                  "universityUrl": { "type": "string", "example": "https://www.westminster.ac.uk" },
+                  "completionDate": { "type": "string", "format": "date", "example": "2026-06-30" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Degree updated successfully." },
+          "400": { "description": "Invalid URL format." },
+          "404": { "description": "Profile or Degree not found." },
+          "500": { "description": "Internal server error." }
+        }
+      },
+      "delete": {
+        "summary": "Remove an academic degree",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the degree to delete",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Degree deleted successfully." },
+          "404": { "description": "Profile or Degree not found." },
+          "500": { "description": "Internal server error." }
+        }
+      }
+    },
+    "/api/profile/certifications": {
+      "post": {
+        "summary": "Add a professional certification",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "certificationName": { "type": "string", "example": "AWS Solutions Architect" },
+                  "courseUrl": { "type": "string", "example": "https://aws.amazon.com/certification" },
+                  "completionDate": { "type": "string", "format": "date", "example": "2025-01-15" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Certification added successfully." } }
+      }
+    },
+
+    "/api/profile/certifications/{id}": {
+      "put": {
+        "summary": "Update an existing professional certification",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the certification to update",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "certificationName": { "type": "string", "example": "AWS Certified Solutions Architect" },
+                  "courseUrl": { "type": "string", "example": "https://aws.amazon.com/certification" },
+                  "completionDate": { "type": "string", "format": "date", "example": "2025-01-15" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Certification updated successfully." },
+          "400": { "description": "Invalid URL format or missing fields." },
+          "404": { "description": "Profile or Certification not found." },
+          "500": { "description": "Internal server error." }
+        }
+      },
+      "delete": {
+        "summary": "Remove a professional certification",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the certification to delete",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Certification deleted successfully." },
+          "404": { "description": "Profile or Certification not found." },
+          "500": { "description": "Internal server error." }
+        }
+      }
+    },
+
+    "/api/profile/licences": {
+      "post": {
+        "summary": "Add a professional licence",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "licenceName": { "type": "string", "example": "Chartered IT Professional" },
+                  "awardingBodyUrl": { "type": "string", "example": "https://www.bcs.org" },
+                  "completionDate": { "type": "string", "format": "date", "example": "2026-02-20" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Licence added successfully." } }
+      }
+    },
+
+    "/api/profile/licences/{id}": {
+      "put": {
+        "summary": "Update an existing professional licence",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the licence to update",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "licenceName": { "type": "string", "example": "Chartered IT Professional" },
+                  "awardingBodyUrl": { "type": "string", "example": "https://www.bcs.org" },
+                  "completionDate": { "type": "string", "format": "date", "example": "2026-02-20" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Licence updated successfully." },
+          "400": { "description": "Invalid URL format or missing fields." },
+          "404": { "description": "Profile or Licence not found." },
+          "500": { "description": "Internal server error." }
+        }
+      },
+      "delete": {
+        "summary": "Remove a professional licence",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the licence to delete",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Licence deleted successfully." },
+          "404": { "description": "Profile or Licence not found." },
+          "500": { "description": "Internal server error." }
+        }
+      }
+    },
+
+
+    "/api/profile/short-courses": {
+      "post": {
+        "summary": "Add a short professional course",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "courseName": { "type": "string", "example": "Agile Scrum Master" },
+                  "courseUrl": { "type": "string", "example": "https://www.scrum.org" },
+                  "completionDate": { "type": "string", "format": "date", "example": "2024-11-10" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Short course added successfully." } }
+      }
+    },
+    "/api/profile/short-courses/{id}": {
+      "put": {
+        "summary": "Update an existing short course",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the short course to update",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "courseName": { "type": "string", "example": "Agile Scrum Master Advanced" },
+                  "courseUrl": { "type": "string", "example": "https://www.scrum.org" },
+                  "completionDate": { "type": "string", "format": "date", "example": "2024-11-10" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Short course updated successfully." },
+          "400": { "description": "Invalid URL format or missing fields." },
+          "404": { "description": "Profile or Short course not found." },
+          "500": { "description": "Internal server error." }
+        }
+      },
+      "delete": {
+        "summary": "Remove a short course",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the short course to delete",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Short course deleted successfully." },
+          "404": { "description": "Profile or Short course not found." },
+          "500": { "description": "Internal server error." }
+        }
+      }
+    },
+
+
+    "/api/profile/employment": {
+      "post": {
+        "summary": "Add employment history",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "jobTitle": { "type": "string", "example": "Backend Developer" },
+                  "companyName": { "type": "string", "example": "Phantasmagoria Ltd" },
+                  "startDate": { "type": "string", "format": "date", "example": "2024-05-01" },
+                  "endDate": { "type": "string", "format": "date", "example": "2026-05-01" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Employment history added successfully." } }
+      }
+    },
+    "/api/profile/employment/{id}": {
+      "put": {
+        "summary": "Update an employment history record",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the employment record to update",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "jobTitle": { "type": "string", "example": "Senior Backend Developer" },
+                  "companyName": { "type": "string", "example": "Phantasmagoria Ltd" },
+                  "startDate": { "type": "string", "format": "date", "example": "2024-05-01" },
+                  "endDate": { "type": "string", "format": "date", "example": "2026-05-01", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Employment history updated successfully." },
+          "400": { "description": "Missing required fields (job title, company, start date)." },
+          "404": { "description": "Profile or Employment record not found." },
+          "500": { "description": "Internal server error." }
+        }
+      },
+      "delete": {
+        "summary": "Remove an employment history record",
+        "tags": ["Profile Management"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the employment record to delete",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Employment history deleted successfully." },
+          "404": { "description": "Profile or Employment record not found." },
+          "500": { "description": "Internal server error." }
+        }
+      }
+    },
+    "/api/bids": {
+      "post": {
+        "summary": "Place or update a blind bid",
+        "description": "Places a new bid or increases an existing bid for a specific date. Enforces the 3-win monthly limit and the increase-only rule.",
+        "tags": ["Bidding"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BidPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bid placed or updated successfully"
+          },
+          "400": {
+            "description": "Bad Request - Invalid amount, past date, or bid not increased"
+          },
+          "403": {
+            "description": "Forbidden - Monthly 3-win limit reached"
+          }
+        }
+      }
+    },
+    "/api/bids/status": {
+      "get": {
+        "summary": "Check blind bid status",
+        "description": "Returns whether the authenticated user is currently 'Winning' or 'Losing' for a specific date without revealing the actual highest bid amount.",
+        "tags": ["Bidding"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "targetDate",
+            "in": "query",
+            "required": true,
+            "description": "The date of the bid to check (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-08-01"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "targetDate": "2026-08-01",
+                  "yourBid": "50.00",
+                  "status": "Winning"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No bid found for the user on this date"
+          }
+        }
+      }
+    },
+    "api/bids/limits": {
+      "get": {
+        "summary": "Get remaining monthly bid slots",
+        "description": "Calculates how many times the user has won in the target month and returns the remaining slots out of the maximum 3.",
+        "tags": ["Bidding"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "targetDate",
+            "in": "query",
+            "required": false,
+            "description": "Optional: Date to check limits against (defaults to today)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Limits calculated successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "month": 8,
+                  "year": 2026,
+                  "winsUsed": 1,
+                  "remainingSlots": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/keys/generate": {
+      "post": {
+        "summary": "Generate a new API key for client access",
+        "tags": ["Developer API (Dashboard)"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "API key generated securely." }
+        }
+      }
+    },
+    "/api/public/keys/revoke/{keyId}": {
+      "delete": {
+        "summary": "Revoke an existing API key",
+        "tags": ["Developer API (Dashboard)"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "keyId",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "API key revoked successfully." }
+        }
+      }
+    },
+    "/api/public/keys/stats": {
+      "get": {
+        "summary": "View usage statistics for generated API keys",
+        "tags": ["Developer API (Dashboard)"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Returns array of access logs with timestamps and endpoints." }
+        }
+      }
+    },
+    "/api/public/alumni-of-the-day": {
+      "get": {
+        "summary": "Fetch the current Alumni of the Day for the AR Client",
+        "tags": ["AR Client Endpoint"],
+        "security": [{ "apiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Returns the winning profile and related professional data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profile": { "type": "object" },
+                    "degrees": { "type": "array", "items": { "type": "object" } },
+                    "employment": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Access denied. No API key provided." },
+          "403": { "description": "Invalid or revoked API key." },
+          "404": { "description": "No Alumni of the Day scheduled for today." }
+        }
+      }
+    },
+    
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Securely terminate a session (Logout)",
+        "tags": ["Authentication"],
+        "security": [
+          { "bearerAuth": [] }
+        ],
+        "responses": {
+          "200": { "description": "Secure logout successful. Session terminated." },
+          "400": { "description": "Invalid token structure." },
+          "401": { "description": "Unauthorized. No active session found." },
+          "500": { "description": "Internal server error during logout." }
+        }
+      }
+    }
+
+  }
+}

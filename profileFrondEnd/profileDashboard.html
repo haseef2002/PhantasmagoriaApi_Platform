@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phantasmagoria | Complete Profile Dashboard</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+
+        .token-setup {
+            background: #e1f5fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #81d4fa;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid var(--secondary);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccd1d9;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .success {
+            color: #27ae60;
+        }
+
+        .error {
+            color: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Phantasmagoria Web Profile creation Dashboard</h1>
+
+    <!-- Auth Helper for Testing -->
+    <div class="token-setup">
+        <label for="jwtToken">Enter JWT Token (from Postman login) to authenticate these forms:</label>
+        <input type="text" id="jwtToken" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+    </div>
+
+    <div class="dashboard-grid">
+
+        <!-- 
+            Core Profile Form 
+            Supports text and Multer file uploads for the profile image.
+        -->
+        <div class="form-card">
+            <h2>1. Core Profile</h2>
+            <form id="coreProfileForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Biography</label>
+                    <textarea name="biography" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>LinkedIn URL</label>
+                    <input type="url" name="linkedinUrl" placeholder="https://www.linkedin.com/in/yourprofile">
+                </div>
+                <div class="form-group">
+                    <label>Profile Image</label>
+                    <input type="file" name="profileImage" accept="image/*">
+                </div>
+                <button type="submit">Save Core Profile</button>
+                <div class="feedback" id="coreFeedback"></div>
+            </form>
+        </div>
+
+        <!-- Degree Form -->
+        <div class="form-card">
+            <h2>2. Add Degree</h2>
+            <form id="degreeForm">
+                <div class="form-group">
+                    <label>Degree Name</label>
+                    <input type="text" name="degreeName" required>
+                </div>
+                <div class="form-group">
+                    <label>University URL</label>
+                    <input type="url" name="universityUrl">
+                </div>
+                <div class="form-group">
+                    <label>Completion Date</label>
+                    <input type="date" name="completionDate" required>
+                </div>
+                <button type="submit">Add Degree</button>
+                <div class="feedback" id="degreeFeedback"></div>
+            </form>
+        </div>
+
+        <!-- Employment Form -->
+        <div class="form-card">
+            <h2>3. Add Employment</h2>
+            <form id="employmentForm">
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" name="jobTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <input type="text" name="companyName" required>
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" name="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date (Leave blank if current)</label>
+                    <input type="date" name="endDate">
+                </div>
+                <button type="submit">Add Employment</button>
+                <div class="feedback" id="employmentFeedback"></div>
+            </form>
+        </div>
+
+        <!--certification Form -->
+        <div class="form-card">
+            <h2>4. Add Certification</h2>
+            <form id="certForm">
+                <div class="form-group">
+                    <label>Certification Name</label>
+                    <input type="text" name="certificationName" required>
+                </div>
+                <div class="form-group">
+                    <label>Course URL</label>
+                    <input type="url" name="courseUrl">
+                </div>
+                <div class="form-group">
+                    <label>Completion Date</label>
+                    <input type="date" name="completionDate" required>
+                </div>
+                <button type="submit">Add Certification</button>
+                <div class="feedback" id="certFeedback"></div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Licence Form -->
+    <div class="form-card">
+        <h2>5. Add Licence</h2>
+        <form id="licenceForm">
+            <div class="form-group">
+                <label>Licence Name</label>
+                <input type="text" name="licenceName" required>
+            </div>
+            <div class="form-group">
+                <label>Awarding Body URL</label>
+                <input type="url" name="awardingBodyUrl" placeholder="https://www.example.com">
+            </div>
+            <div class="form-group">
+                <label>Completion Date</label>
+                <input type="date" name="completionDate" required>
+            </div>
+            <button type="submit">Add Licence</button>
+            <div class="feedback" id="licenceFeedback"></div>
+        </form>
+    </div>
+
+    <!-- Short Course Form -->
+    <div class="form-card">
+        <h2>6. Add Short Course</h2>
+        <form id="shortCourseForm">
+            <div class="form-group">
+                <label>Course Name</label>
+                <input type="text" name="courseName" required>
+            </div>
+            <div class="form-group">
+                <label>Course URL</label>
+                <input type="url" name="courseUrl" placeholder="https://www.example.com">
+            </div>
+            <div class="form-group">
+                <label>Completion Date</label>
+                <input type="date" name="completionDate" required>
+            </div>
+            <button type="submit">Add Short Course</button>
+            <div class="feedback" id="shortCourseFeedback"></div>
+        </form>
+    </div>
+    <script>
+        // API Base URL 
+        const API_BASE = 'http://localhost:3000/api/profile';
+
+        // Helper function to get the token securely
+        const getToken = () => {
+            const token = document.getElementById('jwtToken').value.trim();
+            if (!token) throw new Error("Please enter your JWT Token at the top of the page.");
+            return token;
+        };
+
+        // Helper function to handle UI feedback
+        const showFeedback = (elementId, message, isError = false) => {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `feedback ${isError ? 'error' : 'success'}`;
+            setTimeout(() => { el.textContent = ''; }, 5000); // Clear after 5 seconds
+        };
+
+        // --- 1. CORE PROFILE SUBMISSION ---
+        document.getElementById('coreProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const token = getToken();
+                const formData = new FormData(e.target);
+                const response = await fetch(`${API_BASE}/update`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to save profile');
+
+                showFeedback('coreFeedback', 'Core profile updated successfully!');
+                e.target.reset();
+            } catch (error) {
+                showFeedback('coreFeedback', error.message, true);
+            }
+        });
+
+        // --- 2. GENERIC JSON FORM SUBMISSION ---
+        const handleJsonSubmit = async (e, endpoint, feedbackId) => {
+            e.preventDefault();
+            try {
+                const token = getToken();
+
+                const formData = new FormData(e.target);
+                const jsonData = Object.fromEntries(formData.entries());
+
+                Object.keys(jsonData).forEach(key => {
+                    if (jsonData[key] === "") jsonData[key] = null;
+                });
+
+                const response = await fetch(`${API_BASE}/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Submission failed');
+
+                showFeedback(feedbackId, 'Added successfully!');
+                e.target.reset();
+            } catch (error) {
+                showFeedback(feedbackId, error.message, true);
+            }
+        };
+
+
+        document.getElementById('degreeForm').addEventListener('submit', (e) => handleJsonSubmit(e, 'degrees', 'degreeFeedback'));
+        document.getElementById('employmentForm').addEventListener('submit', (e) => handleJsonSubmit(e, 'employment', 'employmentFeedback'));
+        document.getElementById('certForm').addEventListener('submit', (e) => handleJsonSubmit(e, 'certifications', 'certFeedback'));
+        document.getElementById('licenceForm').addEventListener('submit', (e) => handleJsonSubmit(e, 'licences', 'licenceFeedback'));
+        document.getElementById('shortCourseForm').addEventListener('submit', (e) => handleJsonSubmit(e, 'short-courses', 'shortCourseFeedback'));
+
+    </script>
+</body>
+
+</html>
