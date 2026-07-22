@@ -42,18 +42,17 @@ A secure, headless Node.js and Express REST API built using the Model-View-Contr
  ## Installation & Setup
 Clone the repository:
 
-```Bash
+Bash
 git clone [https://github.com/your-username/phantasmagoria-api.git](https://github.com/your-username/phantasmagoria-api.git)
 cd phantasmagoria-api
 Install dependencies:
 
-```Bash
+Bash
 npm install
 Configure environment variables:
 Create a .env file in the root directory and add your configurations:
 
 Code snippet
-```Bash
 PORT=3000
 DB_HOST=localhost
 DB_USER=root
