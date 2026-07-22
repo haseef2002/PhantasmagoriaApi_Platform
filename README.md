@@ -39,6 +39,8 @@ A secure, headless Node.js and Express REST API built using the Model-View-Contr
 ├── swagger.json        # OpenAPI 3.0 specification
 └── profile-dashboard.html # Frontend client implementation for web forms
 
+---
+
  ## Installation & Setup
 1.Clone the repository:
 Bash
@@ -68,5 +70,7 @@ npm run dev
 # Production mode
 npm start
 
-📖 API Documentation
+---
+
+## 📖 API Documentation
 Interactive API documentation is structured via OpenAPI 3.0. You can review the complete route specifications, parameters, and request schemas in the swagger.json file.
