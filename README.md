@@ -27,7 +27,6 @@ A secure, headless Node.js and Express REST API built using the Model-View-Contr
 
 ##  Project Structure
 
-```text
 ├── config/             # Database connection setup
 ├── controllers/        # Business logic handlers
 ├── models/             # Database query operations (MVC)
@@ -38,7 +37,7 @@ A secure, headless Node.js and Express REST API built using the Model-View-Contr
 ├── server.js           # App entry point & middleware stack
 ├── swagger.json        # OpenAPI 3.0 specification
 └── profile-dashboard.html # Frontend client implementation for web forms
-text```
+
 ---
 
  ## Installation & Setup
