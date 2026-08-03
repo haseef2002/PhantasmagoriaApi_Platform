@@ -274,7 +274,7 @@ const logout = async (req, res) => {
         // 3. Insert into the specific table using FROM_UNIXTIME for perfect time mapping
         try {
             await db.query(
-                'INSERT INTO blacklisted_tokens (token, expires_at) VALUES (?, FROM_UNIXTIME(?))', 
+                'INSERT INTO token_blacklist (token, expires_at) VALUES (?, FROM_UNIXTIME(?))', 
                 [token, decoded.exp]
             );
         } catch (dbError) {

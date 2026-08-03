@@ -314,7 +314,7 @@
       }
     },
     "/api/profile/degrees/{id}": {
-      "put": {
+      "patch": {
         "summary": "Update an existing academic degree",
         "tags": ["Profile Management"],
         "security": [{ "bearerAuth": [] }],
@@ -394,7 +394,7 @@
     },
 
     "/api/profile/certifications/{id}": {
-      "put": {
+      "patch": {
         "summary": "Update an existing professional certification",
         "tags": ["Profile Management"],
         "security": [{ "bearerAuth": [] }],
@@ -475,7 +475,7 @@
     },
 
     "/api/profile/licences/{id}": {
-      "put": {
+      "patch": {
         "summary": "Update an existing professional licence",
         "tags": ["Profile Management"],
         "security": [{ "bearerAuth": [] }],
@@ -556,7 +556,7 @@
       }
     },
     "/api/profile/short-courses/{id}": {
-      "put": {
+      "patch": {
         "summary": "Update an existing short course",
         "tags": ["Profile Management"],
         "security": [{ "bearerAuth": [] }],
@@ -638,7 +638,7 @@
       }
     },
     "/api/profile/employment/{id}": {
-      "put": {
+      "patch": {
         "summary": "Update an employment history record",
         "tags": ["Profile Management"],
         "security": [{ "bearerAuth": [] }],
@@ -769,7 +769,7 @@
         }
       }
     },
-    "api/bids/limits": {
+    "/api/bids/limits": {
       "get": {
         "summary": "Get remaining monthly bid slots",
         "description": "Calculates how many times the user has won in the target month and returns the remaining slots out of the maximum 3.",

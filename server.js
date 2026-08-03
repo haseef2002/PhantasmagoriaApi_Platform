@@ -83,7 +83,6 @@ app.use((err, req, res, next) => {
 // --- INITIALIZATION ---
 
 // Start the midnight automated winner selection cron job
-initBidCron();
 startCronJobs();
 
 // Start the Server

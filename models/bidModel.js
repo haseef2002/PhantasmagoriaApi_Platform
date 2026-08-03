@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const { sendEmail } = require('../utils/emailSender');
+const sendEmail = require('../utils/emailSender');
 
 // Count how many times a user has won in a specific month and year
 const getMonthlyWinCount = async (userId, month, year) => {
@@ -63,7 +63,7 @@ const finalizeWinnerForDate = async (targetDate) => {
         for (const bidder of bidders) {
             const winCountQuery = `SELECT COUNT(*) as winCount FROM bids WHERE user_id = ? AND is_winner = TRUE AND MONTH(target_date) = ? AND YEAR(target_date) = ?`;
             const [winRows] = await connection.query(winCountQuery, [bidder.user_id, targetMonth, targetYear]);
-            
+
             if (winRows[0].winCount < 3) {
                 winner = bidder;
                 break; // Found our eligible winner!
@@ -73,15 +73,22 @@ const finalizeWinnerForDate = async (targetDate) => {
         if (winner) {
             // 3. Mark the winner
             await connection.query('UPDATE bids SET is_winner = TRUE WHERE id = ?', [winner.bid_id]);
-            
+
             // 4. Reset profiles and set the new Alumni of the Day
             await connection.query('UPDATE profiles SET is_alumni_of_day = FALSE');
             await connection.query('UPDATE profiles SET is_alumni_of_day = TRUE WHERE user_id = ?', [winner.user_id]);
-            
-            // 5. Send Notifications
-            await sendEmail(winner.email, "You are Alumni of the Day!", `Congratulations! You won the bid for ${targetDate} with an amount of $${winner.bid_amount}.`);
-            
+
             console.log(`Winner finalized for ${targetDate}: User ${winner.user_id}`);
+
+
+            // 5. Send Notifications 
+            try {
+                await sendEmail(winner.email, "You are Alumni of the Day!", `Congratulations! You won the bid for ${targetDate} with an amount of $${winner.bid_amount}.`);
+            } catch (emailError) {
+                console.error(`[Non-Fatal] Could not send email to ${winner.email}:`, emailError.message);
+            }
+
+
         } else {
             await connection.query('UPDATE profiles SET is_alumni_of_day = FALSE');
             console.log(`No eligible bids for ${targetDate}. Profile reset.`);

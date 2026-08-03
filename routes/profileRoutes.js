@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const path = require('path');
 const profileController = require('../controllers/profileController');
 const authenticateToken = require('../middleware/authMiddleware'); 
 
@@ -12,14 +13,14 @@ const storage = multer.diskStorage({
     filename: function (req, file, cb) {
         // Create a unique filename to prevent overwriting and path traversal attacks
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + '-' + file.originalname);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
-// Enforce strict file types and size limits (30MB) for security
+// Enforce strict file types and size limits (5MB) for security
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 30 * 1024 * 1024 }, 
+    limits: { fileSize: 5 * 1024 * 1024 }, 
     fileFilter: (req, file, cb) => {
         if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp') {
             cb(null, true);

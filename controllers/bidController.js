@@ -1,6 +1,6 @@
 // controllers/bidController.js
 const Bid = require('../models/bidModel');
-const { sendEmail } = require('../utils/emailSender');          
+const sendEmail = require('../utils/emailSender');          
 
 const placeOrUpdateBid = async (req, res) => {
     try {
@@ -43,7 +43,6 @@ const placeOrUpdateBid = async (req, res) => {
         // 3. Save the Bid
         await Bid.upsertBid(userId, bidAmount, targetDate);
 
-        // Trigger Email Notification (Non-blocking)
         sendEmail(userEmail, "Bid Placed Successfully", `Your bid of $${bidAmount} for ${targetDate} has been recorded. Good luck!`);
         res.status(200).json({ message: 'Bid placed successfully.' });
 

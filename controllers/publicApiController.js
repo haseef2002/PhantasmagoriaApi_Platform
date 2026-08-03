@@ -64,7 +64,11 @@ const getAlumniOfTheDay = async (req, res) => {
         // Fetch their associated professional data to serve to the AR client
         const degrees = await Profile.getDegreesByProfileId(winnerProfile.id);
         const employment = await Profile.getEmploymentByProfileId(winnerProfile.id);
-        // Add certifications, licences, etc., as needed by the AR client
+        const certifications = await Profile.getCertificationsByProfileId(winnerProfile.id);
+        const licences = await Profile.getLicencesByProfileId(winnerProfile.id);
+        const shortCourses = await Profile.getShortCoursesByProfileId(winnerProfile.id);
+        
+        
 
         res.status(200).json({
             profile: winnerProfile,
