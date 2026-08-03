@@ -68,7 +68,7 @@ Code snippet
 
 Bash
 Development mode (with nodemon)
-`npm run dev`
+`npm run dev` or `npx nodemon server.js`
 
 Production mode
 `npm start`
